@@ -31,3 +31,5 @@ $string['enabled_help'] = 'Enable Intercom integration.';
 $string['privacy:metadata'] = 'The Intercom local plugin displays does not effect or store any data itself.';
 $string['app_id'] = 'Intercom App ID';
 $string['app_id_help'] = 'Copy the App ID from Settings - Installation in Intercom.';
+$string['id_verification_secret'] = 'Identity Verification Secret';
+$string['id_verification_secret_help'] = 'Copy this from Settings - Security - Identify verification for web in Intercom if you wish to enable this option.';
