@@ -37,112 +37,86 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class helper {
-    /**
-     * Extract the first available image in the section summary.
-     *
-     * @param null|stdClass $context Context instance
-     * @param null|stdClass $section Related section instance
-     * @return null|array An associative array containing the image URL and its alternate text; otherwise, null.
-     */
-    public function embed_intercom($context, $course) {
+	
+	/**
+	* Generate the Intercom Javascript to embed.
+	*
+	* @param null|stdClass $context Context instance
+	* @param null|stdClass $course Related course instance
+	* @return null|string A string containing the Intercom embed code, otherwise, null.
+	*/
+	public function embed_intercom($context, $course) {
 		global $USER;
 		global $CFG;
 		global $SITE;
-		
-        // Trap any catchable error.
-        try {
-            // Grab Intercom App ID from Settings
-            $app_id = get_config('local_intercom', 'app_id');
 
-            // Get active course info
+		// Trap any catchable error.
+		try {
+			// Grab settings for the plugin from the database
+			$app_id = get_config('local_intercom', 'app_id');
+			$id_verification_secret = get_config('local_intercom', 'id_verification_secret');
+			
+			// Generate user hash using ID Verification Secret from settings
+			$user_hash = hash_hmac(
+				'sha256', // hash function
+				$SITE->shortname."-".$USER->id, // user's id
+				$id_verification_secret // secret key
+			);
+
+			// Get active course info
 			if(!empty($course)){
 				$course_title = empty($course->fullname) ? $course->name : $course->fullname;
 				$course_title = format_string($course_title, true, array('context' => \context_system::instance()));
 				$course_desc = "";
 				if (!empty($course->summary)) {
 					$course_desc = format_text($course->summary, FORMAT_HTML,
-						array('context' => \context_system::instance(), 'newlines' => false));
+					array('context' => \context_system::instance(), 'newlines' => false));
 					$course_desc = html_to_text($course_desc, -1, false);
 				}
-				
-				// Get roles for the active course
-				$course_roles = array();
-				$course_roles_str = "";
-				$context = \context_course::instance($course->id);
-				if($roles = get_user_roles($context, $USER->id)){
-					foreach ($roles as $role){
-						$course_roles[] = $role->shortname;
-					}
-					$course_roles_str = implode(", ", $course_roles);
-				}
-			}
-			
-			// Get all user roles across all course contexts for this user
-			$user_roles = array();
-			if(user_has_role_assignment($USER->id, 1, 0)){
-				$user_roles[] = "manager";
-			}
-			if(user_has_role_assignment($USER->id, 2, 0)){
-				$user_roles[] = "coursecreator";
-			}
-			if(user_has_role_assignment($USER->id, 3, 0)){
-				$user_roles[] = "editingteacher";
-			}
-			if(user_has_role_assignment($USER->id, 4, 0)){
-				$user_roles[] = "teacher";
-			}
-			if(user_has_role_assignment($USER->id, 5, 0)){
-				$user_roles[] = "student";
-			}
-			if(in_array($USER->id, explode(",",$CFG->siteadmins))){
-				$user_roles[] = "siteadmin";
-			}
-			$user_roles_str = implode(", ", $user_roles);
-	
-			// Build the JS code to embed
-			$embed_code = 
-			'<script>
-				window.intercomSettings = {
-					app_id: "'.$app_id.'",
-					company: {
-						id: "'.$SITE->shortname.'",
-						name: "'.$SITE->fullname.'",
-						website: "'.$CFG->wwwroot.'"
-					},
-					moodle_version: "Moodle '.$CFG->release.'",
-					user_roles: "'.$user_roles_str.'",
-					user_id: "'.$USER->id.'",
-					username: "'.$USER->username.'",
-					name: "'.$USER->firstname.' '.$USER->lastname.'",
-					email: "'.$USER->email.'",
-					created_at: '.$USER->firstaccess.',';
-			if(!empty($course)){
-				$embed_code .= '
-					active_course_title: "'.$course_title.'",
-					active_course_shortname: "'.$course->shortname.'",
-					active_course_description: "'.$course_desc.'",
-					active_course_id: '.$course->id.',
-					active_course_roles: "'.$course_roles_str.'"
-				};
-			</script>';
-			}else{
-				$embed_code .= '
-				};
-			</script>';
 			}
 
-			$embed_code .=
-			"<script>
-				// We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/".$app_id."'
-				(function(){var w=window;var ic=w.Intercom;if(typeof ic==='function'){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/".$app_id."';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
-			</script>";
+			// Build the JS code to embed
+			$embed_code = '
+				<script>
+					window.intercomSettings = {
+						app_id: "'.$app_id.'",
+						company: {
+							id: "'.$SITE->shortname.'",
+							name: "'.$SITE->fullname.'",
+							website: "'.$CFG->wwwroot.'"
+						},
+						moodle_version: "Moodle '.$CFG->release.'",
+						user_id: "'.$SITE->shortname.'-'.$USER->id.'",
+						username: "'.$USER->username.'",
+						name: "'.$USER->firstname.' '.$USER->lastname.'",
+						email: "'.$USER->email.'",
+						user_hash: "'.$user_hash.'",
+						created_at: '.$USER->firstaccess.',';
+			if(!empty($course)){
+					$embed_code .= '
+						active_course_title: "'.$course_title.'",
+						active_course_shortname: "'.$course->shortname.'",
+						active_course_description: "'.$course_desc.'",
+						active_course_id: '.$course->id.',
+					};
+				</script>';
+			}else{
+					$embed_code .= '
+					};
+				</script>';
+			}
+
+			$embed_code .= "
+				<script>
+					// We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/".$app_id."'
+					(function(){var w=window;var ic=w.Intercom;if(typeof ic==='function'){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/".$app_id."';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+				</script>";
 
 			return $embed_code;
-        } catch (Exception $e) {
-            // Do nothing here.
-            return null;
-        }
-
-        return null;
-    }
+		} catch (Exception $e) {
+			// Do nothing here.
+			return null;
+		}
+		return null;
+	}
 }
