@@ -52,4 +52,12 @@ if ($hassiteconfig) {
     $default = '';
     $setting = new admin_setting_configtext($name, $title, $description, $default, PARAM_NOTAGS);
     $settings->add($setting);
+	
+	// Add a string setting to the settings for this page.
+    $name = 'local_intercom/id_verification_secret';
+    $title = get_string('id_verification_secret', 'local_intercom');
+    $description = get_string('id_verification_secret_help', 'local_intercom');
+    $default = '';
+    $setting = new admin_setting_configtext($name, $title, $description, $default, PARAM_NOTAGS);
+    $settings->add($setting);
 }
