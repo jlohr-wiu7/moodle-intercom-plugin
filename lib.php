@@ -15,12 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of interface functions and constants for module intercom
+ * Library of interface functions and constants for module Intercom
  *
  * All the core Moodle functions, needed to allow the module to work
  * integrated in Moodle should be placed here.
  *
- * All the intercom specific functions, needed to implement all the module
+ * All the Intercom specific functions, needed to implement all the module
  * logic, should go to locallib.php. This will help to save some memory when
  * Moodle is performing actions across all modules.
  *
