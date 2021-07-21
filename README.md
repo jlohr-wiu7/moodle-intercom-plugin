@@ -1,8 +1,8 @@
 # Intercom #
 
-This plugin allows you to easily install Intercom (https://intercom.com/) live chat in Moodle.
+TODO Describe the plugin shortly here.
 
-All that you need to do is enter the App ID from Intercom in the plugin settings and check the enable box to enable it.
+TODO Provide more detailed description here.
 
 ## License ##
 

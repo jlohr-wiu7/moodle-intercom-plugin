@@ -15,12 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of interface functions and constants for module Intercom
+ * Library of interface functions and constants for module intercom
  *
  * All the core Moodle functions, needed to allow the module to work
  * integrated in Moodle should be placed here.
  *
- * All the Intercom specific functions, needed to implement all the module
+ * All the intercom specific functions, needed to implement all the module
  * logic, should go to locallib.php. This will help to save some memory when
  * Moodle is performing actions across all modules.
  *
@@ -52,11 +52,24 @@ function local_intercom_before_standard_html_head() {
         }
 
         list($context, $course, $cm) = get_context_info_array($PAGE->context->id);
+		
+		$ignored_scripts_str = get_config('local_intercom', 'ignored_script_names');
+		$ignored_scripts = explode(",", $ignored_scripts_str);
+		$ignore = false;
+		foreach($ignored_scripts as $ignored){
+			if($_SERVER['SCRIPT_NAME'] == trim($ignored)){
+				$ignore = true;	
+			}
+		}
 
-        $response = \local_intercom\helper::embed_intercom($context, $course);
-        if (!empty($response)) {
-            return $response;
-        }
+		if(!$ignore){
+			$response = (new \local_intercom\helper)->embed_intercom($context, $course);
+			if (!empty($response)) {
+				return $response;
+			}
+		}else{
+			return '';
+		}
     } catch (Exception $e) {
         // Do nothing here.
         return '';

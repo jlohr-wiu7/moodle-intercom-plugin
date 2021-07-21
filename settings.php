@@ -60,4 +60,12 @@ if ($hassiteconfig) {
     $default = '';
     $setting = new admin_setting_configtext($name, $title, $description, $default, PARAM_NOTAGS);
     $settings->add($setting);
+	
+	// Add a string setting to the settings for this page.
+    $name = 'local_intercom/ignored_script_names';
+    $title = get_string('ignored_script_names', 'local_intercom');
+    $description = get_string('ignored_script_names_help', 'local_intercom');
+    $default = '';
+    $setting = new admin_setting_configtext($name, $title, $description, $default, PARAM_NOTAGS);
+    $settings->add($setting);
 }
