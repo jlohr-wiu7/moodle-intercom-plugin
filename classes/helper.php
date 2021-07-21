@@ -62,7 +62,7 @@ class helper {
 				$id_verification_secret // secret key
 			);
 
-	    // Get active course info
+			// Get active course info
 			if(!empty($course)){
 				$course_title = empty($course->fullname) ? $course->name : $course->fullname;
 				$course_title = format_string($course_title, true, array('context' => \context_system::instance()));
@@ -86,6 +86,9 @@ class helper {
 			}
 
 			// Get all user roles across all course contexts for this user
+			// While this is frowned upon and cannot be relied upon, it can provide meaningful data in most instances
+			// Will need to check for capabilities instead at some point
+			/*
 			$user_roles = array();
 			if(user_has_role_assignment($USER->id, 1, 0)){
 				$user_roles[] = "manager";
@@ -106,6 +109,7 @@ class helper {
 				$user_roles[] = "siteadmin";
 			}
 			$user_roles_str = implode(", ", $user_roles);
+			*/
 		
 			$username = isset($USER->username) ? $USER->username : "" ;
 			$firstname  = isset($USER->firstname) ? $USER->firstname : "" ;
@@ -124,7 +128,6 @@ class helper {
 						website: "'.$CFG->wwwroot.'"
 					},
 					moodle_version: "Moodle '.$CFG->release.'",
-					user_roles: "'.$user_roles_str.'",
 					user_id: "'.$SITE->shortname.'-'.$USER->id.'",
 					username: "'.$username.'",
 					name: "'.$firstname.' '.$lastname.'",
