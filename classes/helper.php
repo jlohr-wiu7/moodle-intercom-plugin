@@ -51,7 +51,7 @@ class helper {
 		global $SITE;
 
 	// Trap any catchable error.
-	try {
+	try {	
 	    // Grab settings for the plugin from the database
 	    $app_id = get_config('local_intercom', 'app_id');
 			$id_verification_secret = get_config('local_intercom', 'id_verification_secret');
@@ -111,49 +111,60 @@ class helper {
 			$user_roles_str = implode(", ", $user_roles);
 			*/
 		
-			$username = isset($USER->username) ? $USER->username : "" ;
+			$username = isset($USER->username) ? $USER->username : "guest" ;
 			$firstname  = isset($USER->firstname) ? $USER->firstname : "" ;
 			$lastname  = isset($USER->lastname) ? $USER->lastname : "" ;
 			$email  = isset($USER->email) ? $USER->email : "" ;
 			$firstaccess = isset($USER->firstaccess) ? $USER->firstaccess : "" ;
 
-			// Build the JS code to embed
-			$embed_code = 
-			'<script>
-				window.intercomSettings = {
-					app_id: "'.$app_id.'",
-					company: {
-						id: "'.$SITE->shortname.'",
-						name: "'.$SITE->fullname.'",
-						website: "'.$CFG->wwwroot.'"
-					},
-					moodle_version: "Moodle '.$CFG->release.'",
-					user_id: "'.$SITE->shortname.'-'.$USER->id.'",
-					username: "'.$username.'",
-					name: "'.$firstname.' '.$lastname.'",
-					email: "'.$email.'",
-					user_hash: "'.$user_hash.'",
-					created_at: '.$firstaccess.',';
-			if(!empty($course)){
-				$embed_code .= '
-					active_course_title: "'.$course_title.'",
-					active_course_shortname: "'.$course->shortname.'",
-					active_course_description: "'.$course_desc.'",
-					active_course_id: '.$course->id.',
-					active_course_roles: "'.$course_roles_str.'"
-				};
-			</script>';
+			// handle guest users differntly
+			if($username == "guest"){
+				$embed_code = 
+				'<script>
+					window.intercomSettings = {
+						app_id: "'.$app_id.'",
+						company: {
+							id: "'.$SITE->shortname.'",
+							name: "'.$SITE->fullname.'",
+							website: "'.$CFG->wwwroot.'"
+						},
+					};
+				</script>';
 			}else{
-				$embed_code .= '
-				};
-			</script>';
+				// Build the JS code to embed
+				$embed_code = 
+				'<script>
+					window.intercomSettings = {
+						app_id: "'.$app_id.'",
+						company: {
+							id: "'.$SITE->shortname.'",
+							name: "'.$SITE->fullname.'",
+							website: "'.$CFG->wwwroot.'"
+						},
+						moodle_version: "Moodle '.$CFG->release.'",
+						user_id: "'.$SITE->shortname.'-'.$USER->id.'",
+						username: "'.$username.'",
+						name: "'.$firstname.' '.$lastname.'",
+						email: "'.$email.'",
+						user_hash: "'.$user_hash.'",
+						created_at: '.$firstaccess.',';
+				if(!empty($course)){
+					$embed_code .= '
+						active_course_title: "'.$course_title.'",
+						active_course_shortname: "'.$course->shortname.'",
+						active_course_description: "'.$course_desc.'",
+						active_course_id: '.$course->id.',
+						active_course_roles: "'.$course_roles_str.'"
+					};
+				</script>';
+				}else{
+					$embed_code .= '
+					};
+				</script>';
+				}
 			}
-
-			$embed_code .=
-			"<script>
-				// We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/".$app_id."'
-				(function(){var w=window;var ic=w.Intercom;if(typeof ic==='function'){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/".$app_id."';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
-			</script>";
+			
+			$embed_code .= "<script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==='function'){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/".$app_id."';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();</script>";
 
 			return $embed_code;
 	} catch (Exception $e) {
