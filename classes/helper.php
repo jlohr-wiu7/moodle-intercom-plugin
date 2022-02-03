@@ -152,7 +152,7 @@ class helper {
 					$embed_code .= '
 						active_course_title: "'.$course_title.'",
 						active_course_shortname: "'.$course->shortname.'",
-						active_course_description: "'.$course_desc.'",
+						active_course_description: "'.strip_tags($course_desc).'",
 						active_course_id: '.$course->id.',
 						active_course_roles: "'.$course_roles_str.'"
 					};

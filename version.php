@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_intercom';
 $plugin->release = '0.1.4';
-$plugin->version = 2021082701;
+$plugin->version = 20210827001;
 $plugin->requires = 2019111800;
 $plugin->maturity = MATURITY_ALPHA;
